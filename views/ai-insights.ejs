@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Insights</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Filter Bar -->
+      <section class="chart-card ai-section" style="margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span class="ai-pill">Filter</span>
+          <select id="ai-device" style="min-width:200px;">
+            <option value="__ALL__" <%= (deviceId === '__ALL__') ? 'selected' : '' %>>All devices</option>
+            <% (init && init.deviceIds || []).forEach(function(id){ %>
+              <option value="<%= id %>" <%= (deviceId === id) ? 'selected' : '' %>><%= id %></option>
+            <% }) %>
+          </select>
+          <input type="date" id="ai-from" />
+          <input type="date" id="ai-to" />
+          <button id="ai-apply" class="ai-btn-ghost">Apply</button>
+        </div>
+      </section>
+
+      <!-- Overview Charts -->
+      <section class="charts" style="margin-bottom:16px;">
+        <div class="chart-card">
+          <h3>Devices by Type</h3>
+          <canvas id="ai-type-chart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Devices by Status</h3>
+          <canvas id="ai-status-chart"></canvas>
+        </div>
+      </section>
+
+      <section class="chart-card" style="margin-bottom:16px;">
+        <h3>Energy Share by Device (last 24h)</h3>
+        <canvas id="ai-energy-share"></canvas>
+      </section>
+
+      <!-- AI Prediction Chart -->
+      <section class="chart-card ai-section" style="margin-bottom:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <h3>🔮 AI Energy Prediction</h3>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span id="ai-next-hour" style="font-weight:600; color:#4f46e5;">Next Hour: -- kWh</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:14px;">Confidence:</span>
+              <div style="width:100px; height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden;">
+                <div id="ai-confidence-fill" style="height:100%; background:#4f46e5; width:0%; transition:width 0.3s;"></div>
+              </div>
+              <span id="ai-confidence" style="font-size:14px; font-weight:600;">--%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span id="ai-status-icon">⚪</span>
+              <span id="ai-status-text" style="font-size:14px;">Analyzing...</span>
+            </div>
+          </div>
+        </div>
+        <canvas id="ai-prediction-chart" height="200"></canvas>
+        <div style="margin-top:8px; font-size:12px; color:#6b7280;" id="ai-last-updated">Last updated: --</div>
+      </section>
+
+      <!-- Anomaly Detection -->
+      <section class="chart-card ai-section" style="margin-bottom:16px;">
+        <h3>🚨 Anomaly Detection</h3>
+        <table class="table" style="margin-top:8px;">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Device</th>
+              <th>Type</th>
+              <th>Severity</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="ai-anomaly-body"></tbody>
+        </table>
+      </section>
+
+      <!-- Optimization & Scheduling -->
+      <section class="chart-card ai-section" style="margin-top:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <h3>⚙ Optimization & Smart Scheduling Recommendations</h3>
+          <label style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="ai-auto-apply" /> Auto-Apply Recommendations
+          </label>
+        </div>
+        <div id="ai-reco-list" style="display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px;"></div>
+      </section>
+
+      <!-- AI Summary Narrative -->
+      <section class="chart-card ai-section" style="margin-top:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <h3>🧠 AI Summary for this Period</h3>
+          <button id="ai-refresh-summary" class="ai-btn-ghost">Refresh Insights</button>
+        </div>
+        <p id="ai-summary" style="margin-top:6px; color:#334155;" class="dark:ai-summary-dark"></p>
+      </section>
+
+      <!-- AI History Log -->
+      <section class="chart-card ai-section" style="margin-top:16px;">
+        <h3>📜 AI History Log</h3>
+        <div id="ai-history-filters" style="display:flex; gap:10px; margin-bottom:8px;">
+          <select id="ai-history-confidence">
+            <option value="">All Confidence</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <input type="date" id="ai-history-from" />
+          <input type="date" id="ai-history-to" />
+          <button id="ai-history-apply">Apply</button>
+        </div>
+        <div id="ai-history" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      window.__AI_DEVICE_ID__ = "<%= deviceId %>";
+      window.__AI_INIT_DATA__ = <%- JSON.stringify(init || {}) %>;
+    </script>
+    <script src="/js/ai-insights.js"></script>
+  </body>
+</html>

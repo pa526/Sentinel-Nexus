@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <button id="theme-toggle" class="theme-toggle">Toggle dark</button>
+    <div class="auth-wrap">
+      <div class="auth-aside">
+        <div class="auth-badges">
+          <span class="pill">Real‑time</span>
+          <span class="pill pill-green">Secure</span>
+          <span class="pill pill-blue">IoT Ready</span>
+        </div>
+        <h1>Welcome back</h1>
+        <p>Monitor your energy usage in real time, track consumption trends, and manage your appliances with ease.</p>
+
+        <ul class="features">
+          <li>Live power and energy charts</li>
+          <li>Device‑level filters and insights</li>
+          <li>Appliance add/remove and usage tracking</li>
+        </ul>
+
+        <div class="auth-cta">
+          <a class="btn-outline" href="/register">New here? Create an account →</a>
+        </div>
+
+        <div class="auth-footnote">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</div>
+      </div>
+      <div class="auth-card">
+        <h2>Sign in</h2>
+        <div class="auth-error" id="error"><%= error || '' %></div>
+        <input id="username" type="text" placeholder="Username" />
+        <input id="password" type="password" placeholder="Password" />
+        <button id="login" class="w-full">Login</button>
+        <div class="auth-meta">No account? <a href="/register">Create one</a></div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        function setBtnText(theme){ var btn=document.getElementById('theme-toggle'); if(!btn) return; btn.textContent = theme==='dark' ? 'Toggle bright' : 'Toggle dark'; }
+        function apply(){ var t=localStorage.getItem('sn_theme')||'dark'; if(t==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark'); setBtnText(t); }
+        apply();
+        var btn=document.getElementById('theme-toggle');
+        if(btn){ btn.addEventListener('click', function(){ var cur=localStorage.getItem('sn_theme')||'dark'; var next=cur==='dark'?'light':'dark'; localStorage.setItem('sn_theme', next); apply(); }); }
+      })();
+    </script>
+    <script>
+      document.getElementById('login').addEventListener('click', async () => {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const res = await fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+        if (res.ok) {
+          window.location.href = '/dashboard';
+        } else {
+          const data = await res.json().catch(() => ({}));
+          document.getElementById('error').textContent = data.message || 'Login failed';
+        }
+      });
+    </script>
+  </body>
+  </html>
+
+

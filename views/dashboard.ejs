@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Dashboard - <%= deviceId %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Energy Monitor</h1>
+        <div class="device">
+          <label for="device-select">Device:&nbsp;</label>
+          <select id="device-select">
+            <option value="__ALL__" <%= deviceId === "__ALL__" ? 'selected' : '' %>>All devices</option>
+            <% (deviceIds || []).forEach(function(id){ %>
+              <option value="<%= id %>" <%= deviceId === id ? 'selected' : '' %>><%= id %></option>
+            <% }) %>
+          </select>
+          <button id="theme-toggle" style="margin-left:12px;">Toggle dark</button>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="stat"><span>Latest Power (kW)</span><strong id="stat-power">-</strong></div>
+        <div class="stat"><span>Latest Energy (kWh)</span><strong id="stat-energy">-</strong></div>
+        <div class="stat"><span>Latest Voltage (V)</span><strong id="stat-voltage">-</strong></div>
+        <div class="stat"><span>Latest Current (A)</span><strong id="stat-current">-</strong></div>
+        <div class="stat"><span>Latest Time</span><strong id="stat-time">-</strong></div>
+      </section>
+
+      <section class="stats" style="margin-top:0;">
+        <div class="stat"><span>Total readings</span><strong id="stat-total"><%= (summary && summary.totalReadings) || 0 %></strong></div>
+        <div class="stat"><span>Unique devices</span><strong id="stat-unique"><%= (summary && summary.uniqueDevices) || (deviceIds ? deviceIds.length : 0) %></strong></div>
+        <div class="stat"><span>Viewing</span><strong><%= deviceId === "__ALL__" ? 'All' : deviceId %></strong></div>
+      </section>
+
+      <section class="charts">
+        <div class="chart-card">
+          <h3>Power (kW)</h3>
+          <canvas id="powerChart" height="120"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Energy (kWh)</h3>
+          <canvas id="energyChart" height="120"></canvas>
+        </div>
+      </section>
+
+      <section class="cards">
+        <div class="chart-card">
+          <h3>User</h3>
+          <div>
+            <span>Signed in as: <strong><%= username %></strong></span>
+            <button id="logout-btn" style="margin-left:8px;">Logout</button>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Sample Data</h3>
+          <div>
+            <input id="sample-device" type="text" placeholder="Device ID (e.g., DEV-001)" />
+            <input id="sample-points" type="number" placeholder="Points (e.g., 50)" />
+            <input id="sample-interval" type="number" placeholder="Interval sec (e.g., 30)" />
+            <button id="sample-generate">Generate</button>
+            <span id="sample-status" style="margin-left:8px;color:#6b7280;"></span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3>Recent Readings</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Power (kW)</th>
+              <th>Energy (kWh)</th>
+              <th>Voltage (V)</th>
+              <th>Current (A)</th>
+            </tr>
+          </thead>
+          <tbody id="readings-table">
+            <% initialReadings.forEach(function(r) { %>
+              <tr>
+                <td><%= new Date(r.timestamp).toLocaleString() %></td>
+                <td><%= (r.powerW/1000).toFixed(3) %></td>
+                <td><%= (r.energyWh/1000).toFixed(3) %></td>
+                <td><%= r.voltageV != null ? r.voltageV : '-' %></td>
+                <td><%= r.currentA != null ? r.currentA : '-' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      window.__INITIAL_DEVICE_ID__ = "<%= deviceId %>";
+      window.__INITIAL_READINGS__ = <%- JSON.stringify(initialReadings) %>;
+      window.__DEVICE_IDS__ = <%- JSON.stringify(deviceIds || []) %>;
+    </script>
+    <script src="/js/dashboard.js"></script>
+  </body>
+</html>
+
+
