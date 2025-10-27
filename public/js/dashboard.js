@@ -12,19 +12,23 @@
 
     // Prepare chart datasets
     const MAX_POINTS = 150; // keep charts readable
-    const ONE_HOUR_MS = 60 * 60 * 1000; // show last 1 hour
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000; // show last 24 hours
     const nowMs = Date.now();
-    // Filter initial readings to the last 1 hour
-    const initialHour = initial.filter(r => {
+    // Filter initial readings to the last 24 hours
+    const initialTwentyFourHours = initial.filter(r => {
         const t = Date.parse(r.timestamp);
-        return !Number.isNaN(t) && t >= nowMs - ONE_HOUR_MS;
+        return !Number.isNaN(t) && t >= nowMs - TWENTY_FOUR_HOURS_MS;
     });
     // Store time as both ms and label strings to manage rolling window
-    let timeValuesMs = initialHour.map(r => Date.parse(r.timestamp));
-    let timeLabels = timeValuesMs.map(t => new Date(t).toLocaleTimeString());
+    let timeValuesMs = initialTwentyFourHours.map(r => Date.parse(r.timestamp));
+    let timeLabels = timeValuesMs.map(t => {
+        const date = new Date(t);
+        // Format as hourly intervals (e.g., "12:00", "13:00", "14:00")
+        return date.getHours().toString().padStart(2, '0') + ':00';
+    });
     // Convert to kW and kWh for visualization
-    let powerData = initialHour.map(r => Number(r.powerW) / 1000);
-    let energyData = initialHour.map(r => Number(r.energyWh) / 1000);
+    let powerData = initialTwentyFourHours.map(r => Number(r.powerW) / 1000);
+    let energyData = initialTwentyFourHours.map(r => Number(r.energyWh) / 1000);
 
     function chooseStep(max) {
         const m = Math.max(0, Number(max) || 0);
@@ -73,51 +77,131 @@
             datasets: [{
                 label: 'Power (kW)',
                 data: powerData,
-                borderColor: '#4f46e5',
-                backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                borderColor: '#3b82f6', // Modern blue
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 pointRadius: 0,
-                borderWidth: 2,
-                tension: 0.25,
-                fill: true
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3b82f6',
+                pointBorderWidth: 3,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                // Gradient background
+                gradient: {
+                    backgroundColor: {
+                        type: 'linear',
+                        x0: 0,
+                        y0: 0,
+                        x1: 0,
+                        y1: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
+                            { offset: 0.5, color: 'rgba(59, 130, 246, 0.1)' },
+                            { offset: 1, color: 'rgba(59, 130, 246, 0.05)' }
+                        ]
+                    }
+                }
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 300, easing: 'easeOutQuad' },
+            animation: { 
+                duration: 2000, 
+                easing: 'easeInOutQuart',
+                delay: (context) => context.dataIndex * 50
+            },
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, labels: { color: pc.label } },
+                legend: { 
+                    display: true, 
+                    labels: { 
+                        color: pc.label,
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20
+                    }
+                },
                 decimation: { enabled: true, algorithm: 'min-max' },
                 tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
                     callbacks: {
-                        label: (ctx) => ` ${ctx.parsed.y.toFixed(3)} kW`
+                        label: (ctx) => ` ${ctx.parsed.y.toFixed(3)} kW`,
+                        title: (ctx) => `Time: ${ctx[0].label}`
                     }
                 }
             },
-            layout: { padding: { top: 8, right: 12, bottom: 16, left: 12 } },
+            layout: { padding: { top: 16, right: 20, bottom: 24, left: 20 } },
             scales: {
                 x: {
                     display: true,
-                    grid: { color: pc.grid },
+                    grid: { 
+                        color: 'rgba(59, 130, 246, 0.1)',
+                        drawBorder: false,
+                        lineWidth: 1
+                    },
                     ticks: {
                         color: pc.ticks,
-                        maxTicksLimit: 10,
+                        maxTicksLimit: 24,
                         autoSkip: true,
-                        autoSkipPadding: 2,
+                        autoSkipPadding: 8,
+                        padding: 16,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
                         callback: function(value, index, ticks) {
-                            const total = ticks.length || 1;
-                            const showEvery = Math.ceil(total / 10);
+                            const showEvery = Math.max(1, Math.floor(ticks.length / 24));
                             return (index % showEvery === 0) ? this.getLabelForValue(value) : '';
                         }
                     },
-                    title: { display: true, text: 'Time', color: pc.label }
+                    title: { 
+                        display: true, 
+                        text: 'Time (Hours)', 
+                        color: pc.label,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { top: 20 }
+                    }
                 },
                 y: {
                     display: true,
-                    grid: { color: pc.grid },
-                    ticks: { color: pc.ticks },
-                    title: { display: true, text: 'Kilowatts (kW)', color: pc.label },
+                    grid: { 
+                        color: 'rgba(59, 130, 246, 0.1)',
+                        drawBorder: false,
+                        lineWidth: 1
+                    },
+                    ticks: { 
+                        color: pc.ticks,
+                        padding: 16,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        }
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Power (kW)', 
+                        color: pc.label,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { bottom: 20 }
+                    },
                     beginAtZero: true
                 }
             }
@@ -132,51 +216,131 @@
             datasets: [{
                 label: 'Energy (kWh)',
                 data: energyData,
-                borderColor: '#16a34a',
-                backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                borderColor: '#10b981', // Modern emerald green
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 pointRadius: 0,
-                borderWidth: 2,
-                tension: 0.2,
-                fill: true
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#10b981',
+                pointBorderWidth: 3,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                // Gradient background
+                gradient: {
+                    backgroundColor: {
+                        type: 'linear',
+                        x0: 0,
+                        y0: 0,
+                        x1: 0,
+                        y1: 1,
+                        colorStops: [
+                            { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                            { offset: 0.5, color: 'rgba(16, 185, 129, 0.1)' },
+                            { offset: 1, color: 'rgba(16, 185, 129, 0.05)' }
+                        ]
+                    }
+                }
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: { duration: 300, easing: 'easeOutQuad' },
+            animation: { 
+                duration: 2000, 
+                easing: 'easeInOutQuart',
+                delay: (context) => context.dataIndex * 50
+            },
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, labels: { color: ec.label } },
+                legend: { 
+                    display: true, 
+                    labels: { 
+                        color: ec.label,
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20
+                    }
+                },
                 decimation: { enabled: true, algorithm: 'min-max' },
                 tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
                     callbacks: {
-                        label: (ctx) => ` ${ctx.parsed.y.toFixed(3)} kWh`
+                        label: (ctx) => ` ${ctx.parsed.y.toFixed(3)} kWh`,
+                        title: (ctx) => `Time: ${ctx[0].label}`
                     }
                 }
             },
-            layout: { padding: { top: 8, right: 12, bottom: 16, left: 12 } },
+            layout: { padding: { top: 16, right: 20, bottom: 24, left: 20 } },
             scales: {
                 x: {
                     display: true,
-                    grid: { color: ec.grid },
+                    grid: { 
+                        color: 'rgba(16, 185, 129, 0.1)',
+                        drawBorder: false,
+                        lineWidth: 1
+                    },
                     ticks: {
                         color: ec.ticks,
-                        maxTicksLimit: 10,
+                        maxTicksLimit: 24,
                         autoSkip: true,
-                        autoSkipPadding: 2,
+                        autoSkipPadding: 8,
+                        padding: 16,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
                         callback: function(value, index, ticks) {
-                            const total = ticks.length || 1;
-                            const showEvery = Math.ceil(total / 10);
+                            const showEvery = Math.max(1, Math.floor(ticks.length / 24));
                             return (index % showEvery === 0) ? this.getLabelForValue(value) : '';
                         }
                     },
-                    title: { display: true, text: 'Time', color: ec.label }
+                    title: { 
+                        display: true, 
+                        text: 'Time (Hours)', 
+                        color: ec.label,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { top: 20 }
+                    }
                 },
                 y: {
                     display: true,
-                    grid: { color: ec.grid },
-                    ticks: { color: ec.ticks },
-                    title: { display: true, text: 'Kilowatt-hours (kWh)', color: ec.label },
+                    grid: { 
+                        color: 'rgba(16, 185, 129, 0.1)',
+                        drawBorder: false,
+                        lineWidth: 1
+                    },
+                    ticks: { 
+                        color: ec.ticks,
+                        padding: 16,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        }
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Energy (kWh)', 
+                        color: ec.label,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: { bottom: 20 }
+                    },
                     beginAtZero: true
                 }
             }
@@ -228,8 +392,8 @@
             powerChart.data.datasets[0].data = powerChart.data.datasets[0].data.slice(-MAX_POINTS);
             timeValuesMs = timeValuesMs.slice(-MAX_POINTS);
         }
-        // drop points older than 1 hour
-        const cutoff = tsMs - ONE_HOUR_MS;
+        // drop points older than 24 hours
+        const cutoff = tsMs - TWENTY_FOUR_HOURS_MS;
         while (timeValuesMs.length && timeValuesMs[0] < cutoff) {
             timeValuesMs.shift();
             powerChart.data.labels.shift();
@@ -278,15 +442,19 @@
         }))
         .filter(r => !Number.isNaN(r._tsNum))
         .sort((a, b) => a._tsNum - b._tsNum)
-        .filter(r => r._tsNum >= Date.now() - ONE_HOUR_MS)
+        .filter(r => r._tsNum >= Date.now() - TWENTY_FOUR_HOURS_MS)
         .map(({ _tsNum, ...rest }) => rest);
         return normalized;
     }
 
     function rebuildChartsAndTable(readings) {
-        // rebuild labels/datasets for last hour
+        // rebuild labels/datasets for last 24 hours
         timeValuesMs = readings.map(r => Date.parse(r.timestamp));
-        timeLabels = timeValuesMs.map(t => new Date(t).toLocaleTimeString());
+        timeLabels = timeValuesMs.map(t => {
+            const date = new Date(t);
+            // Format as hourly intervals (e.g., "12:00", "13:00", "14:00")
+            return date.getHours().toString().padStart(2, '0') + ':00';
+        });
         powerData = readings.map(r => Number(r.powerW) / 1000);
         energyData = readings.map(r => Number(r.energyWh) / 1000);
 

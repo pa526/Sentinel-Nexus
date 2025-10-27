@@ -14,7 +14,11 @@ router.get("/dashboard", requireAuth, async (req, res) => {
         const device_id = req.query.device_id || "__ALL__";
         const devices = await Device.find({}, { device_id: 1, _id: 0 }).lean();
         const deviceIds = devices.map(d => d.device_id);
-        const filter = device_id === "__ALL__" ? {} : { device_id };
+        
+        // Filter to only last 24 hours
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const filter = device_id === "__ALL__" ? { timestamp: { $gte: twentyFourHoursAgo } } : { device_id, timestamp: { $gte: twentyFourHoursAgo } };
+        
         const readings = await Reading.find(filter).sort({ timestamp: 1 }).lean();
         const totalReadings = readings.length;
         const uniqueDevices = new Set(readings.map(r => r.device_id)).size;
@@ -31,8 +35,21 @@ router.get("/dashboard", requireAuth, async (req, res) => {
     }
 });
 
+// Energy Management page
+router.get("/energy-management", requireAuth, async (req, res) => {
+    try {
+        res.render("energy-management", {
+            username: req.user.username
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Failed to load Energy Management");
+    }
+});
+
 // Insights page data is prepared in app.js currently; we could move it here later
 
 module.exports = router;
+
 
 

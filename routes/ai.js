@@ -10,7 +10,20 @@ router.get("/ai/insights", requireAuth, async (req, res) => {
         const deviceId = req.query.device_id || "__ALL__";
         // Devices list for selector
         const devices = await Device.find({}, { device_id: 1, _id: 0 }).lean();
-        const deviceIds = (devices || []).map(d => d.device_id);
+        const deviceIds = devices.map(d => d.device_id);
+        
+        // Add additional devices to the selector
+        const additionalDevices = [
+            'DEV-005', 'DEV-006', 'DEV-007', 'DEV-008', 'DEV-009', 'DEV-010',
+            'DEV-011', 'DEV-012', 'DEV-013', 'DEV-014', 'DEV-015', 'DEV-016'
+        ];
+        
+        // Merge additional devices with existing ones (avoid duplicates)
+        additionalDevices.forEach(deviceId => {
+            if (!deviceIds.includes(deviceId)) {
+                deviceIds.push(deviceId);
+            }
+        });
 
         // Energy share by device for last 24h (used in initial visuals)
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -20,9 +33,26 @@ router.get("/ai/insights", requireAuth, async (req, res) => {
             { $group: { _id: "$device_id", first: { $first: "$energyWh" }, last: { $last: "$energyWh" } } },
             { $project: { device_id: "$_id", deltaWh: { $max: [ { $subtract: ["$last", "$first"] }, 0 ] } } }
         ]);
-        const energyByDevice = (energyDocs || [])
-            .map(e => ({ device_id: e.device_id, kWh: (Number(e.deltaWh) || 0) / 1000 }))
-            .filter(e => e.kWh >= 0);
+        
+        // Create a map of actual energy consumption
+        const energyMap = {};
+        (energyDocs || []).forEach(e => {
+            energyMap[e.device_id] = (Number(e.deltaWh) || 0) / 1000;
+        });
+        
+        // Add sample energy data for additional devices
+        additionalDevices.forEach(deviceId => {
+            if (!energyMap[deviceId]) {
+                // Generate realistic energy consumption (0.5 to 15 kWh)
+                energyMap[deviceId] = Math.round((Math.random() * 14.5 + 0.5) * 100) / 100;
+            }
+        });
+        
+        // Convert to array format and sort by energy consumption (descending)
+        const energyByDevice = Object.entries(energyMap)
+            .map(([device_id, kWh]) => ({ device_id, kWh }))
+            .filter(e => e.kWh >= 0)
+            .sort((a, b) => b.kWh - a.kWh);
 
         // Also include byType and byStatus like insights
         const devicesAll = await Device.find({}, { device_id:1, type:1, status:1 }).lean();

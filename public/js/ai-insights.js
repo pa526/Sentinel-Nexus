@@ -242,40 +242,94 @@
     const initData = window.__AI_INIT_DATA__ || {};
     const { byType = {}, byStatus = {}, energyByDevice = [] } = initData;
 
-    // Type chart
+    // Type chart - Bar Chart
     const typeCtx = document.getElementById('ai-type-chart');
     if (typeCtx) {
       new Chart(typeCtx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
           labels: Object.keys(byType),
           datasets: [{
+            label: 'Device Count',
             data: Object.values(byType),
-            backgroundColor: ['#4f46e5', '#16a34a', '#f59e0b', '#ef4444']
+            backgroundColor: ['#4f46e5', '#16a34a', '#f59e0b', '#ef4444'],
+            borderColor: ['#4f46e5', '#16a34a', '#f59e0b', '#ef4444'],
+            borderWidth: 1
           }]
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              },
+              title: {
+                display: true,
+                text: 'Number of Devices'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Device Type'
+              }
+            }
+          }
         }
       });
     }
 
-    // Status chart
+    // Status chart - Bar Chart
     const statusCtx = document.getElementById('ai-status-chart');
     if (statusCtx) {
       new Chart(statusCtx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
           labels: Object.keys(byStatus),
           datasets: [{
+            label: 'Device Count',
             data: Object.values(byStatus),
-            backgroundColor: ['#16a34a', '#ef4444', '#f59e0b']
+            backgroundColor: ['#16a34a', '#ef4444', '#f59e0b'],
+            borderColor: ['#16a34a', '#ef4444', '#f59e0b'],
+            borderWidth: 1
           }]
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              },
+              title: {
+                display: true,
+                text: 'Number of Devices'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Device Status'
+              }
+            }
+          }
         }
       });
     }
@@ -290,18 +344,53 @@
           datasets: [{
             label: 'Energy (kWh)',
             data: energyByDevice.map(d => d.kWh),
-            backgroundColor: '#4f46e5'
+            backgroundColor: energyByDevice.map((_, index) => {
+              const colors = ['#4f46e5', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
+              return colors[index % colors.length];
+            }),
+            borderColor: energyByDevice.map((_, index) => {
+              const colors = ['#4f46e5', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
+              return colors[index % colors.length];
+            }),
+            borderWidth: 1
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false // Hide legend for cleaner look with many devices
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.parsed.y.toFixed(2)} kWh`;
+                }
+              }
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
               title: {
                 display: true,
                 text: 'Energy (kWh)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(1) + ' kWh';
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Device ID'
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
               }
             }
           }
@@ -350,3 +439,4 @@
   renderOverviewCharts();
   refreshAll();
 })();
+

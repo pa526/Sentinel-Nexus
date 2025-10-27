@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Management - Sentinel Nexus</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/energy-management.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>⚡ Energy Management System</h1>
+        <div class="header-actions">
+          <select id="device-selector" title="Select a device to view its specific data">
+            <option value="all">🌐 All Devices</option>
+            <option value="device-1">⚙️ Machinery 1 (HVAC)</option>
+            <option value="device-2">⚙️ Machinery 2 (Water Pump)</option>
+            <option value="device-3">⚙️ Machinery 3 (Lighting)</option>
+          </select>
+          <button id="theme-toggle">Toggle Theme</button>
+          <button id="back-dashboard">← Dashboard</button>
+        </div>
+      </header>
+
+      <!-- Device Status Banner -->
+      <div id="device-status-banner" class="device-status-banner">
+        <div class="banner-icon">📊</div>
+        <div class="banner-content">
+          <strong id="selected-device-name">All Devices</strong>
+          <span id="selected-device-status">Viewing combined data from all devices</span>
+        </div>
+        <div class="banner-stats">
+          <span><strong id="device-power">0.0</strong> kW Active</span>
+          <span><strong id="device-energy">0.0</strong> kWh Today</span>
+        </div>
+      </div>
+
+      <!-- 🌬️ Wind Energy Integration Panel -->
+      <section class="energy-panel wind-energy-panel">
+        <h2>🌬️ Wind Energy Integration</h2>
+        <div class="panel-grid">
+          <div class="panel-card">
+            <h3>Real-time Wind Generation</h3>
+            <div class="wind-stats">
+              <div class="stat-item">
+                <span class="label">Current Output</span>
+                <strong class="value" id="wind-current-output">0.0 kW</strong>
+              </div>
+              <div class="stat-item">
+                <span class="label">Average (24h)</span>
+                <strong class="value" id="wind-avg-24h">0.0 kW</strong>
+              </div>
+              <div class="stat-item">
+                <span class="label">Wind Speed</span>
+                <strong class="value" id="wind-speed">0.0 m/s</strong>
+              </div>
+              <div class="stat-item">
+                <span class="label">Grid Independence</span>
+                <strong class="value independence-score" id="independence-score">0%</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Machinery Recommendations</h3>
+            <div id="machinery-recommendations" class="recommendations-list">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Manual Shifting Controls</h3>
+            <div id="shifting-controls" class="shifting-controls">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🔋 Battery Health Monitoring Panel -->
+      <section class="energy-panel battery-panel">
+        <h2>🔋 Battery Health Monitoring</h2>
+        <div class="panel-grid">
+          <div class="panel-card battery-status-card">
+            <h3>Battery Status</h3>
+            <div class="battery-display">
+              <div class="battery-container">
+                <div class="battery-outline">
+                  <div class="battery-level" id="battery-level-bar"></div>
+                </div>
+                <div class="battery-info">
+                  <strong id="battery-percentage">0%</strong>
+                  <span id="battery-status-text" class="status-text">Charging</span>
+                </div>
+              </div>
+            </div>
+            <div class="battery-metrics">
+              <div class="metric">
+                <span class="metric-label">Voltage</span>
+                <span class="metric-value" id="battery-voltage">0.0 V</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Current</span>
+                <span class="metric-value" id="battery-current">0.0 A</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Temperature</span>
+                <span class="metric-value" id="battery-temp">0°C</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Cycles</span>
+                <span class="metric-value" id="battery-cycles">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Health Indicators</h3>
+            <div class="health-indicators">
+              <div class="indicator">
+                <span class="indicator-label">Overall Health</span>
+                <div class="indicator-bar">
+                  <div class="indicator-fill health-good" id="health-indicator"></div>
+                </div>
+                <span class="indicator-value" id="health-value">Healthy</span>
+              </div>
+              <div class="indicator">
+                <span class="indicator-label">Estimated Life</span>
+                <span class="indicator-value" id="battery-life-estimate">85% (5.2 years)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Smart Charging Suggestions</h3>
+            <div id="charging-suggestions" class="suggestions-list">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🔥 Fire Frame Energy Flow Visualization -->
+      <section class="energy-panel energy-flow-panel">
+        <h2>🔥 Energy Flow Visualization</h2>
+        <div class="info-banner">
+          <strong>⚡ Wire-Frame Energy Diagram:</strong> 
+          This diagram shows live energy connections from sources to machinery.
+          <span style="display:inline-block; margin: 0 12px;">•</span>
+          <span style="color:#22c55e;">Green wires</span> = Renewable energy
+          <span style="display:inline-block; margin: 0 12px;">•</span>
+          <span style="color:#3b82f6;">Blue wires</span> = Grid power
+          <span style="display:inline-block; margin: 0 12px;">•</span>
+          <span style="color:#f59e0b;">Orange dots</span> = Energy flow
+        </div>
+        <div class="flow-legend">
+          <div class="legend-item">
+            <div class="legend-line green-line"></div>
+            <span>Renewable Energy (Solar/Wind)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-line blue-line"></div>
+            <span>Grid Energy</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-arrow">→</div>
+            <span>Energy Flow Direction</span>
+          </div>
+        </div>
+        
+        <div class="energy-flow-container">
+          <div class="flow-section-header">
+            <h3>⚡ Energy Sources</h3>
+          </div>
+          
+          <div class="energy-sources wireframe-container">
+            <div class="source-card wireframe-node" data-source="solar" title="Solar Panel System - Clean renewable energy">
+              <div class="node-connector"></div>
+              <div class="source-icon">☀️</div>
+              <h4>Solar</h4>
+              <div class="source-power" id="solar-power">0.0 kW</div>
+              <div class="source-status online" id="solar-status">Online</div>
+              <div class="wire-label">#SRC-01</div>
+            </div>
+            <div class="source-card wireframe-node" data-source="wind" title="Wind Turbine System - Clean renewable energy">
+              <div class="node-connector"></div>
+              <div class="source-icon">🌬️</div>
+              <h4>Wind</h4>
+              <div class="source-power" id="wind-power">0.0 kW</div>
+              <div class="source-status online" id="wind-status">Online</div>
+              <div class="wire-label">#SRC-02</div>
+            </div>
+            <div class="source-card wireframe-node" data-source="battery" title="Battery Storage System">
+              <div class="node-connector"></div>
+              <div class="source-icon">🔋</div>
+              <h4>Battery</h4>
+              <div class="source-power" id="battery-flow-power">0.0 kW</div>
+              <div class="source-status online" id="battery-status">Online</div>
+              <div class="wire-label">#SRC-03</div>
+            </div>
+            <div class="source-card wireframe-node" data-source="grid" title="Electrical Grid - Backup power">
+              <div class="node-connector"></div>
+              <div class="source-icon">🔌</div>
+              <h4>Grid</h4>
+              <div class="source-power" id="grid-power">0.0 kW</div>
+              <div class="source-status online" id="grid-status">Online</div>
+              <div class="wire-label">#SRC-04</div>
+            </div>
+          </div>
+
+          <div class="energy-flow-connections" id="energy-flow-canvas">
+            <div class="flow-connection-label">
+              <span class="flow-label-text">Live Energy Connections</span>
+            </div>
+          </div>
+
+          <div class="flow-section-header">
+            <h3>🔧 Machinery & Devices</h3>
+          </div>
+
+          <div class="energy-devices wireframe-container">
+            <div class="device-card wireframe-node" data-device="machinery-1" data-priority="high" title="HVAC System - Powered by renewable energy">
+              <div class="node-connector"></div>
+              <div class="device-icon">⚙️</div>
+              <h4>Machinery 1</h4>
+              <div class="device-power" id="device-1-power">2.5 kW</div>
+              <div class="device-source" id="device-1-source">Solar</div>
+              <div class="wire-label">#MCH-01</div>
+              <div class="device-priority priority-high">
+                <span class="priority-dot"></span>
+                High Priority
+              </div>
+            </div>
+            <div class="device-card wireframe-node" data-device="machinery-2" data-priority="medium" title="Water Pump System">
+              <div class="node-connector"></div>
+              <div class="device-icon">⚙️</div>
+              <h4>Machinery 2</h4>
+              <div class="device-power" id="device-2-power">1.8 kW</div>
+              <div class="device-source" id="device-2-source">Wind</div>
+              <div class="wire-label">#MCH-02</div>
+              <div class="device-priority priority-medium">
+                <span class="priority-dot"></span>
+                Medium Priority
+              </div>
+            </div>
+            <div class="device-card wireframe-node" data-device="machinery-3" data-priority="low" title="Lighting System">
+              <div class="node-connector"></div>
+              <div class="device-icon">⚙️</div>
+              <h4>Machinery 3</h4>
+              <div class="device-power" id="device-3-power">0.9 kW</div>
+              <div class="device-source" id="device-3-source">Battery</div>
+              <div class="wire-label">#MCH-03</div>
+              <div class="device-priority priority-low">
+                <span class="priority-dot"></span>
+                Low Priority
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 📊 Energy Prediction System -->
+      <section class="energy-panel prediction-panel">
+        <h2>📊 Energy Prediction System</h2>
+        <div class="prediction-controls">
+          <button class="time-range-btn active" data-range="24h">24 Hours</button>
+          <button class="time-range-btn" data-range="7d">7 Days</button>
+          <button class="time-range-btn" data-range="30d">30 Days</button>
+        </div>
+        <div class="panel-grid">
+          <div class="panel-card full-width chart-container">
+            <h3>Prediction Chart</h3>
+            <div class="mini-chart-wrapper">
+              <canvas id="prediction-chart" height="180"></canvas>
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>Optimal Shift Timing</h3>
+            <div id="shift-recommendations" class="recommendations-list">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+          <div class="panel-card">
+            <h3>Estimated Savings</h3>
+            <div class="savings-display">
+              <div class="savings-item">
+                <span class="savings-label">Energy Saved</span>
+                <strong class="savings-value" id="energy-saved">0 kWh</strong>
+              </div>
+              <div class="savings-item">
+                <span class="savings-label">Cost Saved</span>
+                <strong class="savings-value" id="cost-saved">$0.00</strong>
+              </div>
+              <div class="savings-item">
+                <span class="savings-label">Confidence</span>
+                <strong class="savings-value confidence-high" id="prediction-confidence">85%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      window.__USERNAME__ = "<%= username %>";
+    </script>
+    <script src="/js/energy-management.js"></script>
+  </body>
+</html>
