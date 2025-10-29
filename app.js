@@ -33,7 +33,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || "dev-secret-change-me",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 hours
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
 }));
 
 app.use(passport.initialize());

@@ -8,6 +8,15 @@
   </head>
   <body>
     <div class="container">
+      <!-- Header with Dashboard Link -->
+      <header style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 12px 0;">
+        <h1 style="margin: 0; font-size: 28px; color: #f8fafc;">🤖 AI Insights</h1>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <a href="/dashboard" style="padding: 10px 16px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-radius: 10px; text-decoration: none; display: inline-block; box-shadow: 0 8px 18px rgba(79,70,229,0.25); transition: all .1s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 24px rgba(79,70,229,0.28)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 18px rgba(79,70,229,0.25)'">← Dashboard</a>
+          <button id="ai-theme-toggle" style="padding: 10px 14px; background: linear-gradient(135deg, #1f2937, #0b1220); color: #e5e7eb; border: 1px solid #374151; border-radius: 10px; cursor: pointer; transition: all .3s ease;">Toggle Theme</button>
+        </div>
+      </header>
+
       <!-- Filter Bar -->
       <section class="chart-card ai-section" style="margin-bottom:16px;">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">

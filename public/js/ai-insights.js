@@ -1,4 +1,25 @@
 (function(){
+  // Theme management
+  const aiThemeToggle = document.getElementById('ai-theme-toggle');
+  function applyTheme() {
+    const theme = localStorage.getItem('sn_theme') || 'dark';
+    if (theme === 'dark') {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }
+  applyTheme();
+
+  if (aiThemeToggle) {
+    aiThemeToggle.addEventListener('click', () => {
+      const current = localStorage.getItem('sn_theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('sn_theme', next);
+      applyTheme();
+    });
+  }
+
   const deviceSelect = document.getElementById('ai-device');
   const fromInput = document.getElementById('ai-from');
   const toInput = document.getElementById('ai-to');

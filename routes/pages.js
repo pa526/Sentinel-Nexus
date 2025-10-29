@@ -35,20 +35,6 @@ router.get("/dashboard", requireAuth, async (req, res) => {
     }
 });
 
-// Energy Management page
-router.get("/energy-management", requireAuth, async (req, res) => {
-    try {
-        res.render("energy-management", {
-            username: req.user.username
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Failed to load Energy Management");
-    }
-});
-
-// Insights page data is prepared in app.js currently; we could move it here later
-
 module.exports = router;
 
 
